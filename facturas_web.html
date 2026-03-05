@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Facturas - Clinica Dental</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f4f8; color: #222; }
+  header { background: linear-gradient(135deg, #1a5276, #2e86c1); color: white; padding: 24px 32px; }
+  header h1 { font-size: 1.8em; margin-bottom: 4px; }
+  header p { opacity: 0.8; font-size: 0.9em; }
+  .stats { display: flex; gap: 16px; padding: 20px 32px; flex-wrap: wrap; }
+  .stat { background: white; border-radius: 10px; padding: 16px 24px; flex: 1; min-width: 140px;
+           box-shadow: 0 2px 8px rgba(0,0,0,0.08); text-align: center; }
+  .stat .num { font-size: 2em; font-weight: bold; color: #2e86c1; }
+  .stat .lbl { font-size: 0.8em; color: #666; margin-top: 4px; }
+  .filtros { background: white; margin: 0 32px 16px; border-radius: 10px;
+              padding: 16px 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+              display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .filtros input, .filtros select { padding: 8px 12px; border: 1px solid #ddd;
+              border-radius: 6px; font-size: 0.9em; flex: 1; min-width: 160px; }
+  .filtros button { padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer;
+              background: #2e86c1; color: white; font-size: 0.9em; }
+  .filtros button:hover { background: #1a5276; }
+  .btn-export { background: #27ae60 !important; }
+  .tabla-wrap { margin: 0 32px 32px; background: white; border-radius: 10px;
+                 box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.88em; }
+  th { background: #1a5276; color: white; padding: 12px 14px; text-align: left; cursor: pointer; }
+  th:hover { background: #2e86c1; }
+  td { padding: 10px 14px; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+  tr:hover { background: #f8fbff; }
+  .tag { display: inline-block; padding: 3px 8px; border-radius: 12px; font-size: 0.78em;
+           background: #d6eaf8; color: #1a5276; font-weight: 500; }
+  .tag.dental { background: #d5f5e3; color: #1e8449; }
+  .tag.honor { background: #fdebd0; color: #ca6f1e; }
+  .tag.sumin { background: #e8daef; color: #6c3483; }
+  .tag.teleco { background: #d1f2eb; color: #148f77; }
+  a.drive { color: #2e86c1; text-decoration: none; font-weight: 500; }
+  a.drive:hover { text-decoration: underline; }
+  .no-data { text-align: center; padding: 60px; color: #999; font-size: 1.1em; }
+  .footer { text-align: center; padding: 20px; color: #999; font-size: 0.8em; }
+  @media (max-width: 600px) {
+    .stats, .filtros, .tabla-wrap { margin: 0 12px 12px; }
+    header { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🦷 Gestor de Facturas — Clinica Dental</h1>
+  <p>Actualizado: 05/03/2026 11:40 &nbsp;|&nbsp;
+     <a href="https://docs.google.com/spreadsheets/d/1ZO99leGrBa8mPDV-sgJD16QpJ29qhJu59XLcf5oRUu8/edit" target="_blank" style="color:#aed6f1">Ver Google Sheets ↗</a>
+  </p>
+</header>
+
+<div class="stats">
+  <div class="stat"><div class="num" id="stat-total">0</div><div class="lbl">Total facturas</div></div>
+  <div class="stat"><div class="num" id="stat-year">0</div><div class="lbl">Este año</div></div>
+  <div class="stat"><div class="num" id="stat-cats">0</div><div class="lbl">Categorias</div></div>
+  <div class="stat"><div class="num" id="stat-provs">0</div><div class="lbl">Proveedores</div></div>
+</div>
+
+<div class="filtros">
+  <input type="text" id="buscar" placeholder="🔍 Buscar por asunto, proveedor, archivo...">
+  <select id="filtro-cat"><option value="">Todas las categorias</option></select>
+  <select id="filtro-anio"><option value="">Todos los años</option></select>
+  <button onclick="exportarCSV()">⬇ CSV</button>
+  <button class="btn-export" onclick="exportarPDF()">⬇ PDF</button>
+  <button onclick="limpiarFiltros()">✕ Limpiar</button>
+</div>
+
+<div class="tabla-wrap">
+<table id="tabla">
+  <thead>
+    <tr>
+      <th onclick="ordenar('Fecha Correo')">Fecha ↕</th>
+      <th onclick="ordenar('Asunto')">Asunto ↕</th>
+      <th onclick="ordenar('Remitente')">Remitente ↕</th>
+      <th onclick="ordenar('Archivo')">Archivo ↕</th>
+      <th onclick="ordenar('Categoria')">Categoria ↕</th>
+      <th>Drive</th>
+    </tr>
+  </thead>
+  <tbody id="tbody"></tbody>
+</table>
+</div>
+
+<div class="footer">Clinica Dental &mdash; Sistema de Gestion de Facturas</div>
+
+<script>
+const DATOS = [];
+let ordenCol = 'Fecha Correo', ordenAsc = false;
+let filtrados = [...DATOS];
+
+function tagClass(cat) {
+  if (!cat) return '';
+  const c = cat.toLowerCase();
+  if (c.includes('dental') || c.includes('implante') || c.includes('ortodoncia')) return 'dental';
+  if (c.includes('honorar') || c.includes('colabor')) return 'honor';
+  if (c.includes('suministro') || c.includes('electr') || c.includes('agua') || c.includes('gas')) return 'sumin';
+  if (c.includes('teleco') || c.includes('movil')) return 'teleco';
+  return '';
+}
+
+function renderTabla() {
+  const tbody = document.getElementById('tbody');
+  if (!filtrados.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="no-data">No se encontraron facturas</td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtrados.map(f => `
+    <tr>
+      <td>${f['Fecha Correo'] || ''}</td>
+      <td>${(f['Asunto'] || '').substring(0,60)}${(f['Asunto']||'').length>60?'...':''}</td>
+      <td>${(f['Remitente'] || '').replace(/<.*>/, '').trim().substring(0,35)}</td>
+      <td style="font-size:0.82em;color:#555">${(f['Archivo'] || '').substring(0,40)}</td>
+      <td><span class="tag ${tagClass(f['Categoria'])}">${f['Categoria'] || 'General'}</span></td>
+      <td>${f['Enlace Drive'] ? `<a class="drive" href="${f['Enlace Drive']}" target="_blank">Ver ↗</a>` : '-'}</td>
+    </tr>
+  `).join('');
+  actualizarStats();
+}
+
+function actualizarStats() {
+  document.getElementById('stat-total').textContent = filtrados.length;
+  const anioActual = new Date().getFullYear().toString();
+  document.getElementById('stat-year').textContent = filtrados.filter(f => f['Año'] === anioActual).length;
+  document.getElementById('stat-cats').textContent = new Set(filtrados.map(f => f['Categoria'])).size;
+  document.getElementById('stat-provs').textContent = new Set(filtrados.map(f => (f['Remitente']||'').replace(/<.*>/,'').trim())).size;
+}
+
+function aplicarFiltros() {
+  const q = document.getElementById('buscar').value.toLowerCase();
+  const cat = document.getElementById('filtro-cat').value;
+  const anio = document.getElementById('filtro-anio').value;
+  filtrados = DATOS.filter(f => {
+    const texto = [f['Asunto'], f['Remitente'], f['Archivo'], f['Categoria']].join(' ').toLowerCase();
+    return (!q || texto.includes(q)) &&
+           (!cat || f['Categoria'] === cat) &&
+           (!anio || f['Año'] === anio);
+  });
+  ordenarDatos();
+  renderTabla();
+}
+
+function ordenar(col) {
+  if (ordenCol === col) ordenAsc = !ordenAsc; else { ordenCol = col; ordenAsc = true; }
+  ordenarDatos();
+  renderTabla();
+}
+
+function ordenarDatos() {
+  filtrados.sort((a, b) => {
+    const va = (a[ordenCol] || '').toLowerCase();
+    const vb = (b[ordenCol] || '').toLowerCase();
+    return ordenAsc ? va.localeCompare(vb) : vb.localeCompare(va);
+  });
+}
+
+function limpiarFiltros() {
+  document.getElementById('buscar').value = '';
+  document.getElementById('filtro-cat').value = '';
+  document.getElementById('filtro-anio').value = '';
+  filtrados = [...DATOS];
+  renderTabla();
+}
+
+function exportarCSV() {
+  const cols = ['Fecha Correo','Asunto','Remitente','Archivo','Categoria','Año','Mes','Enlace Drive'];
+  const csv = [cols.join(','), ...filtrados.map(f =>
+    cols.map(c => `"${(f[c]||'').replace(/"/g,'""')}"`).join(',')
+  )].join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'facturas_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+function exportarPDF() { window.print(); }
+
+// Inicializar filtros
+const cats = [...new Set(DATOS.map(f => f['Categoria']).filter(Boolean))].sort();
+cats.forEach(c => {
+  const o = document.createElement('option'); o.value = c; o.textContent = c;
+  document.getElementById('filtro-cat').appendChild(o);
+});
+const anios = [...new Set(DATOS.map(f => f['Año']).filter(Boolean))].sort().reverse();
+anios.forEach(a => {
+  const o = document.createElement('option'); o.value = a; o.textContent = a;
+  document.getElementById('filtro-anio').appendChild(o);
+});
+
+document.getElementById('buscar').addEventListener('input', aplicarFiltros);
+document.getElementById('filtro-cat').addEventListener('change', aplicarFiltros);
+document.getElementById('filtro-anio').addEventListener('change', aplicarFiltros);
+
+filtrados = [...DATOS];
+ordenarDatos();
+renderTabla();
+</script>
+</body>
+</html>
