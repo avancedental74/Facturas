@@ -2,7 +2,7 @@
 <html lang="es" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="sync-fecha" content="2026-03-09T13:34:27.030659">
+<meta name="sync-fecha" content="2026-03-09T16:45:21.940826">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Avance Dental — Portal Gestoría</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -203,6 +203,8 @@ body {
   padding: 1px 7px;
   border-radius: 10px;
 }
+.n-badge-irpf { background: var(--purple-bg) !important; color: var(--purple) !important; }
+.n-badge-ingreso { background: var(--green-bg) !important; color: var(--green) !important; }
 
 .sidebar-footer {
   padding: 14px 20px;
@@ -776,6 +778,118 @@ td { padding: 10px 14px; vertical-align: middle; }
 .empty .e-icon { font-size: 2.5em; margin-bottom: 12px; opacity: 0.4; }
 .empty p { font-size: 13.5px; }
 
+/* ── DOCTORES PAGE ── */
+.doctores-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; gap: 12px; flex-wrap: wrap;
+}
+.doctores-header h3 { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; }
+.doctores-anio-select {
+  padding: 6px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm);
+  background: var(--surface); color: var(--ink); font-size: 13px; cursor: pointer;
+}
+.doctor-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  margin-bottom: 14px; overflow: hidden; box-shadow: var(--shadow);
+  transition: box-shadow var(--transition);
+}
+.doctor-card:hover { box-shadow: var(--shadow-lg); }
+.doctor-card-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px; cursor: pointer; user-select: none;
+}
+.doctor-avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--purple-bg); color: var(--purple);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 800; font-family: 'Syne', sans-serif;
+  flex-shrink: 0;
+}
+.doctor-meta { flex: 1; min-width: 0; }
+.doctor-name { font-size: 14px; font-weight: 700; color: var(--ink); }
+.doctor-stats { font-size: 12px; color: var(--ink-60); margin-top: 3px; }
+.doctor-totals { display: flex; gap: 20px; align-items: center; }
+.doctor-total-item { text-align: right; }
+.doctor-total-label { font-size: 10px; color: var(--ink-60); text-transform: uppercase; letter-spacing: .08em; font-family: 'Syne', sans-serif; }
+.doctor-total-value { font-size: 14px; font-weight: 700; font-family: 'DM Mono', monospace; }
+.doctor-total-value.irpf { color: var(--purple); }
+.doctor-total-value.bruto { color: var(--green); }
+.doctor-toggle { color: var(--ink-30); font-size: 16px; margin-left: 8px; transition: transform var(--transition); }
+.doctor-card.open .doctor-toggle { transform: rotate(180deg); }
+.doctor-facturas-wrap { display: none; border-top: 1px solid var(--border); }
+.doctor-card.open .doctor-facturas-wrap { display: block; }
+.doctor-facturas-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.doctor-facturas-table th {
+  background: var(--surface2); padding: 8px 14px;
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--ink-60); text-align: left; border-bottom: 1px solid var(--border);
+}
+.doctor-facturas-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.doctor-facturas-table tr:last-child td { border-bottom: none; }
+.doctor-facturas-table tr:hover td { background: var(--surface2); }
+.irpf-badge {
+  background: var(--purple-bg); color: var(--purple);
+  font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 5px; font-family: 'DM Mono', monospace;
+}
+.modelo111-box {
+  background: var(--purple-bg); border: 1px dashed var(--purple); border-radius: var(--radius);
+  padding: 20px 24px; margin-bottom: 20px;
+}
+.modelo111-box h4 { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--purple); margin-bottom: 12px; }
+.modelo111-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; }
+.modelo111-item label { font-size: 10px; color: var(--purple); text-transform: uppercase; letter-spacing: .08em; font-family: 'Syne', sans-serif; display: block; margin-bottom: 4px; }
+.modelo111-item .m111-val { font-size: 18px; font-weight: 800; font-family: 'DM Mono', monospace; color: var(--purple); }
+.doctores-empty { text-align: center; padding: 60px 20px; color: var(--ink-60); font-size: 14px; }
+
+/* ── FINANCIERAS PAGE ── */
+.financieras-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 20px; gap: 12px; flex-wrap: wrap;
+}
+.financieras-header h3 { font-family: 'Syne', sans-serif; font-size: 16px; font-weight: 700; }
+.ingreso-badge {
+  background: var(--green-bg); color: var(--green);
+  font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 5px; font-family: 'DM Mono', monospace;
+}
+.ingreso-kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 22px; }
+.ingreso-kpi {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px 20px; box-shadow: var(--shadow);
+}
+.ingreso-kpi .ik-label { font-size: 11px; color: var(--ink-60); text-transform: uppercase; letter-spacing: .08em; font-family: 'Syne', sans-serif; }
+.ingreso-kpi .ik-value { font-size: 22px; font-weight: 800; font-family: 'DM Mono', monospace; color: var(--green); margin-top: 6px; }
+.ingreso-kpi .ik-sub { font-size: 11px; color: var(--ink-60); margin-top: 3px; }
+.financiera-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  margin-bottom: 14px; overflow: hidden; box-shadow: var(--shadow);
+}
+.financiera-card-header {
+  display: flex; align-items: center; gap: 14px;
+  padding: 16px 20px; cursor: pointer; user-select: none;
+}
+.financiera-avatar {
+  width: 42px; height: 42px; border-radius: var(--radius-sm);
+  background: var(--green-bg); color: var(--green);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; font-weight: 800; font-family: 'Syne', sans-serif;
+  flex-shrink: 0; letter-spacing: -1px;
+}
+.financiera-meta { flex: 1; min-width: 0; }
+.financiera-name { font-size: 14px; font-weight: 700; color: var(--ink); }
+.financiera-stats { font-size: 12px; color: var(--ink-60); margin-top: 3px; }
+.financiera-total { font-size: 15px; font-weight: 800; font-family: 'DM Mono', monospace; color: var(--green); }
+.financiera-facturas-wrap { display: none; border-top: 1px solid var(--border); }
+.financiera-card.open .financiera-facturas-wrap { display: block; }
+.fin-facturas-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.fin-facturas-table th {
+  background: var(--green-bg); padding: 8px 14px;
+  font-size: 10.5px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em;
+  color: var(--green); text-align: left; border-bottom: 1px solid var(--border);
+}
+.fin-facturas-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); }
+.fin-facturas-table tr:last-child td { border-bottom: none; }
+.fin-facturas-table tr:hover td { background: var(--surface2); }
+
 /* ── PRINT STYLES (Mejora 5) ── */
 @media print {
   .sidebar, .topbar, .btn, .panel-filters, .pag-btns, .sync-panel,
@@ -860,6 +974,18 @@ td { padding: 10px 14px; vertical-align: middle; }
     </button>
     <button class="nav-item" onclick="showPage('estadisticas', this)">
       <span class="n-icon">◈</span><span>Estadísticas</span>
+    </button>
+
+    <div class="nav-group-label">Profesionales</div>
+    <button class="nav-item" onclick="showPage('doctores', this)">
+      <span class="n-icon">🩺</span><span>Doctores</span>
+      <span class="n-badge n-badge-irpf" id="nav-badge-doctores">—</span>
+    </button>
+
+    <div class="nav-group-label">Ingresos</div>
+    <button class="nav-item" onclick="showPage('financieras', this)">
+      <span class="n-icon">💳</span><span>Financieras</span>
+      <span class="n-badge n-badge-ingreso" id="nav-badge-financieras">—</span>
     </button>
 
     <div class="nav-group-label">Gestoría</div>
@@ -1134,6 +1260,69 @@ td { padding: 10px 14px; vertical-align: middle; }
     </div>
 
   </div><!-- /content -->
+
+    <!-- ── DOCTORES ── -->
+    <div class="page" id="page-doctores">
+      <div class="modelo111-box" id="modelo111-resumen">
+        <h4>📋 Modelo 111 — Retenciones IRPF acumuladas</h4>
+        <div class="modelo111-grid">
+          <div class="modelo111-item"><label>Trimestre actual</label><div class="m111-val" id="m111-trim">—</div></div>
+          <div class="modelo111-item"><label>Base imponible (trim.)</label><div class="m111-val" id="m111-base">—</div></div>
+          <div class="modelo111-item"><label>IRPF retenido (trim.)</label><div class="m111-val" id="m111-irpf">—</div></div>
+          <div class="modelo111-item"><label>Nº perceptores (trim.)</label><div class="m111-val" id="m111-perc">—</div></div>
+          <div class="modelo111-item"><label>Total año</label><div class="m111-val" id="m111-anio">—</div></div>
+        </div>
+      </div>
+
+      <div class="doctores-header">
+        <h3>🩺 Facturas de doctores autónomos con IRPF</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select class="doctores-anio-select" id="doc-anio-sel" onchange="renderDoctores()">
+            <option value="">Todos los años</option>
+          </select>
+          <select class="doctores-anio-select" id="doc-trim-sel" onchange="renderDoctores()">
+            <option value="">Todos los trimestres</option>
+            <option value="1">1T — Ene·Feb·Mar</option>
+            <option value="2">2T — Abr·May·Jun</option>
+            <option value="3">3T — Jul·Ago·Sep</option>
+            <option value="4">4T — Oct·Nov·Dic</option>
+          </select>
+        </div>
+      </div>
+      <div id="doctores-list"></div>
+    </div>
+
+    <!-- ── FINANCIERAS (INGRESOS) ── -->
+    <div class="page" id="page-financieras">
+      <div class="financieras-header">
+        <h3>💳 Ingresos de financieras</h3>
+        <select class="doctores-anio-select" id="fin-anio-sel" onchange="renderFinancieras()">
+          <option value="">Todos los años</option>
+        </select>
+      </div>
+
+      <div class="ingreso-kpi-grid">
+        <div class="ingreso-kpi">
+          <div class="ik-label">Total ingresos</div>
+          <div class="ik-value" id="fin-kpi-total">—</div>
+          <div class="ik-sub" id="fin-kpi-sub">todas las financieras</div>
+        </div>
+        <div class="ingreso-kpi">
+          <div class="ik-label">Facturas de ingreso</div>
+          <div class="ik-value" id="fin-kpi-count" style="color:var(--accent)">—</div>
+          <div class="ik-sub">documentos recibidos</div>
+        </div>
+        <div class="ingreso-kpi">
+          <div class="ik-label">Financieras activas</div>
+          <div class="ik-value" id="fin-kpi-entidades" style="color:var(--amber)">—</div>
+          <div class="ik-sub">entidades distintas</div>
+        </div>
+      </div>
+
+      <div id="financieras-list"></div>
+    </div>
+
+</div><!-- /content -->
 </main>
 </div><!-- /app -->
 
@@ -1236,10 +1425,35 @@ const trimActual  = Math.ceil((new Date().getMonth() + 1) / 3);
 // ── CATEGORÍAS DISPONIBLES ──
 const TODAS_CATS = [
   'General','Suministros - Electricidad','Suministros - Gas','Suministros - Agua',
-  'Telecomunicaciones','Proveedor Dental','Honorarios Colaborador','Compras Online',
-  'Alimentacion/Limpieza','Alquiler','Gastos Comunidad','Seguros','Seguros Medicos',
+  'Telecomunicaciones','Proveedor Dental','Honorarios Colaborador','Honorarios Autonomo IRPF',
+  'Compras Online','Alimentacion/Limpieza','Alquiler','Gastos Comunidad','Seguros','Seguros Medicos',
   'Colegio Profesional','Mutua / Seguridad Social','Otros'
 ];
+
+// ── FINANCIERAS CONOCIDAS ──
+const FINANCIERAS_KEYWORDS = ['sofinco','soyou','bbva','cetelem','cofidis','santander consumer','sabadell consumer','caixabank payments','financ'];
+function esFinanciera(f) {
+  const rem = limpiarRem(f['Remitente']).toLowerCase();
+  const cat = (f['Categoria']||'').toLowerCase();
+  if (cat.includes('ingreso') || cat.includes('financiera')) return true;
+  return FINANCIERAS_KEYWORDS.some(k => rem.includes(k));
+}
+function nombreFinanciera(f) {
+  const rem = limpiarRem(f['Remitente']).toLowerCase();
+  if (rem.includes('sofinco')) return 'Sofinco';
+  if (rem.includes('soyou')) return 'SoYou';
+  if (rem.includes('bbva')) return 'BBVA';
+  if (rem.includes('cetelem')) return 'Cetelem';
+  if (rem.includes('cofidis')) return 'Cofidis';
+  if (rem.includes('santander')) return 'Santander Consumer';
+  if (rem.includes('sabadell')) return 'Sabadell Consumer';
+  if (rem.includes('caixabank')) return 'CaixaBank Payments';
+  return limpiarRem(f['Remitente']).substring(0, 25);
+}
+function esDoctor(f) {
+  const cat = (f['Categoria']||'').toLowerCase();
+  return cat.includes('honorarios autonomo') || cat.includes('honorarios autónomo') || cat.includes('irpf');
+}
 
 // ── UTILS ──
 function limpiarRem(r) { return (r||'').replace(/<[^>]+>/g,'').replace(/"/g,'').trim(); }
@@ -1250,8 +1464,10 @@ function catClass(cat) {
   const c = cat.toLowerCase();
   if (c.includes('dental')||c.includes('implante')) return 'dental';
   if (c.includes('honorar')||c.includes('colabor'))  return 'honor';
+  if (c.includes('irpf')||c.includes('autón')||c.includes('autonomo')) return 'honor';
   if (c.includes('suministro')||c.includes('electr')||c.includes('agua')||c.includes('gas')) return 'sumin';
   if (c.includes('teleco')) return 'teleco';
+  if (c.includes('ingreso')||c.includes('financier')) return 'ingreso';
   return '';
 }
 function formatImporte(v) {
@@ -1334,13 +1550,15 @@ function showPage(id, btn) {
   document.getElementById('page-'+id).classList.add('active');
   if (btn) btn.classList.add('active');
   else {
-    const idx = {resumen:0,facturas:1,estadisticas:2,informe:3,exportar:4}[id];
+    const idx = {resumen:0,facturas:1,estadisticas:2,doctores:3,financieras:4,informe:5,exportar:6}[id];
     document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
   }
-  const titles = {resumen:'Resumen',facturas:'Facturas',estadisticas:'Estadísticas',informe:'Informe PDF',exportar:'Exportar'};
+  const titles = {resumen:'Resumen',facturas:'Facturas',estadisticas:'Estadísticas',doctores:'Doctores (IRPF)',financieras:'Ingresos — Financieras',informe:'Informe PDF',exportar:'Exportar'};
   document.getElementById('page-title').textContent = titles[id]||id;
   if (id==='estadisticas' && !statsInit) { renderStats(); statsInit=true; }
   if (id==='facturas') detectarDuplicados();
+  if (id==='doctores') renderDoctores();
+  if (id==='financieras') renderFinancieras();
 }
 
 // ── KPIs ──
@@ -1358,6 +1576,22 @@ function renderKPIs() {
   const total = DATOS.reduce((s,f) => s + (parseFloat(f['Importe'])||0), 0);
   document.getElementById('k-importe').textContent = total > 0 ? formatImporte(total) : '—';
   document.getElementById('updated-date').textContent = new Date().toLocaleDateString('es-ES');
+
+  // Badges nuevas secciones
+  const nDoctores = DATOS.filter(esDoctor).length;
+  document.getElementById('nav-badge-doctores').textContent = nDoctores || '—';
+  const nFin = DATOS.filter(esFinanciera).length;
+  document.getElementById('nav-badge-financieras').textContent = nFin || '—';
+
+  // Poblar selectores de año
+  const anios = [...new Set(DATOS.map(f=>f['Año']).filter(Boolean))].sort().reverse();
+  ['doc-anio-sel','fin-anio-sel'].forEach(selId => {
+    const sel = document.getElementById(selId);
+    if (!sel) return;
+    const val = sel.value;
+    sel.innerHTML = '<option value="">Todos los años</option>' + anios.map(a=>`<option value="${a}" ${a===anioActual?'selected':''}>${a}</option>`).join('');
+    if (val) sel.value = val;
+  });
 }
 
 // ── MEJORA 6: RESUMEN POR CATEGORÍA ──
@@ -1365,7 +1599,7 @@ function renderCatSummary() {
   const iconos = {
     'Proveedor Dental':'🦷','Suministros - Electricidad':'⚡','Suministros - Gas':'🔥',
     'Suministros - Agua':'💧','Telecomunicaciones':'📡','Honorarios Colaborador':'👨‍⚕️',
-    'Alquiler':'🏠','Seguros':'🛡️','Seguros Medicos':'❤️','Compras Online':'📦',
+    'Honorarios Autonomo IRPF':'🩺','Alquiler':'🏠','Seguros':'🛡️','Seguros Medicos':'❤️','Compras Online':'📦',
     'Gastos Comunidad':'🏢','Mutua / Seguridad Social':'🏛️','General':'📄'
   };
 
@@ -1673,6 +1907,175 @@ function marcarDuplicado() {
   document.getElementById('m-dup-btn').textContent = f['_duplicado'] ? '✅ Desmarcar duplicado' : '⚠️ Marcar duplicado';
   renderTabla();
   toast(f['_duplicado'] ? '⚠️ Marcada como duplicado' : '✅ Desmarcada como duplicado', f['_duplicado']?'error':'success');
+}
+
+// ── DOCTORES (HONORARIOS AUTÓNOMO IRPF) ──
+function renderDoctores() {
+  const anioSel = document.getElementById('doc-anio-sel')?.value || '';
+  const trimSel = parseInt(document.getElementById('doc-trim-sel')?.value) || 0;
+
+  let datos = DATOS.filter(esDoctor);
+  if (anioSel) datos = datos.filter(f => f['Año']===anioSel);
+  if (trimSel) datos = datos.filter(f => trimestre(f['Fecha Correo'])===trimSel);
+
+  // Agrupar por doctor (remitente)
+  const porDoctor = {};
+  datos.forEach(f => {
+    const nombre = limpiarRem(f['Remitente']).substring(0, 40) || 'Desconocido';
+    if (!porDoctor[nombre]) porDoctor[nombre] = [];
+    porDoctor[nombre].push(f);
+  });
+
+  // Modelo 111 para el trimestre actual (siempre del año actual)
+  const datosModelo = DATOS.filter(f => esDoctor(f) && f['Año']===anioActual && trimestre(f['Fecha Correo'])===trimActual);
+  const baseTotal = datosModelo.reduce((s,f) => s + (parseFloat(f['Importe'])||0), 0);
+  const irpfTotal = datosModelo.reduce((s,f) => {
+    const pct = parseFloat((f['IRPF_PCT']||f['IRPF']||'').toString().replace('%','').replace(',','.')) || 15;
+    return s + (parseFloat(f['Importe'])||0) * pct / 100;
+  }, 0);
+  const anualIrpf = DATOS.filter(f => esDoctor(f) && f['Año']===anioActual)
+    .reduce((s,f) => {
+      const pct = parseFloat((f['IRPF_PCT']||f['IRPF']||'').toString().replace('%','').replace(',','.')) || 15;
+      return s + (parseFloat(f['Importe'])||0) * pct / 100;
+    }, 0);
+
+  document.getElementById('m111-trim').textContent = `${trimActual}T ${anioActual}`;
+  document.getElementById('m111-base').textContent = formatImporte(baseTotal) || '—';
+  document.getElementById('m111-irpf').textContent = formatImporte(irpfTotal) || '—';
+  document.getElementById('m111-perc').textContent = new Set(datosModelo.map(f=>limpiarRem(f['Remitente']))).size || '—';
+  document.getElementById('m111-anio').textContent = formatImporte(anualIrpf) || '—';
+
+  const lista = document.getElementById('doctores-list');
+  if (!Object.keys(porDoctor).length) {
+    lista.innerHTML = `<div class="doctores-empty">🩺 No se encontraron facturas de honorarios autónomos con IRPF en el período seleccionado.<br><small>Categoría buscada: "Honorarios Autonomo IRPF"</small></div>`;
+    return;
+  }
+
+  lista.innerHTML = Object.entries(porDoctor).sort((a,b) => b[1].length - a[1].length).map(([nombre, facs]) => {
+    const iniciales = nombre.split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+    const bruto = facs.reduce((s,f) => s + (parseFloat(f['Importe'])||0), 0);
+    const irpf = facs.reduce((s,f) => {
+      const pct = parseFloat((f['IRPF_PCT']||f['IRPF']||'15').toString().replace('%','').replace(',','.')) || 15;
+      return s + (parseFloat(f['Importe'])||0) * pct / 100;
+    }, 0);
+    const id = 'doc-' + nombre.replace(/\W/g,'_');
+    return `
+    <div class="doctor-card" id="${id}">
+      <div class="doctor-card-header" onclick="toggleCard('${id}')">
+        <div class="doctor-avatar">${iniciales||'DR'}</div>
+        <div class="doctor-meta">
+          <div class="doctor-name">${nombre}</div>
+          <div class="doctor-stats">${facs.length} factura${facs.length!==1?'s':''} · IRPF ~15%</div>
+        </div>
+        <div class="doctor-totals">
+          <div class="doctor-total-item">
+            <div class="doctor-total-label">Honorarios</div>
+            <div class="doctor-total-value bruto">${formatImporte(bruto)||'—'}</div>
+          </div>
+          <div class="doctor-total-item">
+            <div class="doctor-total-label">IRPF retenido</div>
+            <div class="doctor-total-value irpf">${formatImporte(irpf)||'—'}</div>
+          </div>
+        </div>
+        <div class="doctor-toggle">▾</div>
+      </div>
+      <div class="doctor-facturas-wrap">
+        <table class="doctor-facturas-table">
+          <thead><tr><th>Fecha</th><th>Asunto</th><th>Honorarios</th><th>IRPF (~15%)</th><th>Drive</th></tr></thead>
+          <tbody>
+            ${facs.sort((a,b)=>(b['Fecha Correo']||'').localeCompare(a['Fecha Correo']||'')).map(f => {
+              const imp = parseFloat(f['Importe'])||0;
+              const irpfF = imp * 0.15;
+              const drive = f['Drive_Link'] ? `<a href="${f['Drive_Link']}" target="_blank" class="btn btn-ghost btn-sm" style="font-size:11px">↗ Ver</a>` : '—';
+              return `<tr>
+                <td>${f['Fecha Correo']||'—'}</td>
+                <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${f['Asunto']||''}">${(f['Asunto']||'—').substring(0,45)}</td>
+                <td>${imp ? `<span class="importe-badge">${formatImporte(imp)}</span>` : '—'}</td>
+                <td>${imp ? `<span class="irpf-badge">${formatImporte(irpfF)}</span>` : '—'}</td>
+                <td>${drive}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── FINANCIERAS (INGRESOS) ──
+function renderFinancieras() {
+  const anioSel = document.getElementById('fin-anio-sel')?.value || '';
+  let datos = DATOS.filter(esFinanciera);
+  if (anioSel) datos = datos.filter(f => f['Año']===anioSel);
+
+  const totalIngresos = datos.reduce((s,f) => s + (parseFloat(f['Importe'])||0), 0);
+  document.getElementById('fin-kpi-total').textContent = formatImporte(totalIngresos) || '—';
+  document.getElementById('fin-kpi-count').textContent = datos.length;
+  document.getElementById('fin-kpi-sub').textContent = anioSel ? `en ${anioSel}` : 'todos los años';
+
+  // Agrupar por financiera
+  const porFin = {};
+  datos.forEach(f => {
+    const nombre = nombreFinanciera(f);
+    if (!porFin[nombre]) porFin[nombre] = [];
+    porFin[nombre].push(f);
+  });
+  document.getElementById('fin-kpi-entidades').textContent = Object.keys(porFin).length || '—';
+
+  const lista = document.getElementById('financieras-list');
+  if (!Object.keys(porFin).length) {
+    lista.innerHTML = `<div class="doctores-empty">💳 No se encontraron facturas de financieras en el período seleccionado.<br><small>Financieras detectadas: Sofinco, SoYou, BBVA, Cetelem, Cofidis...</small></div>`;
+    return;
+  }
+
+  const finColores = {
+    'Sofinco':'#e63946','SoYou':'#457b9d','BBVA':'#004481','Cetelem':'#00843d',
+    'Cofidis':'#ff6b00','Santander Consumer':'#ec0000','Sabadell Consumer':'#0053a0','CaixaBank Payments':'#007c89'
+  };
+
+  lista.innerHTML = Object.entries(porFin).sort((a,b) => {
+    const ta = a[1].reduce((s,f)=>s+(parseFloat(f['Importe'])||0),0);
+    const tb = b[1].reduce((s,f)=>s+(parseFloat(f['Importe'])||0),0);
+    return tb - ta;
+  }).map(([nombre, facs]) => {
+    const total = facs.reduce((s,f) => s + (parseFloat(f['Importe'])||0), 0);
+    const iniciales = nombre.split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+    const color = finColores[nombre] || '#059669';
+    const id = 'fin-' + nombre.replace(/\W/g,'_');
+    return `
+    <div class="financiera-card" id="${id}">
+      <div class="financiera-card-header" onclick="toggleCard('${id}')">
+        <div class="financiera-avatar" style="background:${color}15;color:${color}">${iniciales}</div>
+        <div class="financiera-meta">
+          <div class="financiera-name">${nombre}</div>
+          <div class="financiera-stats">${facs.length} factura${facs.length!==1?'s':''} de ingreso</div>
+        </div>
+        <div class="financiera-total">${formatImporte(total)||'—'}</div>
+        <span class="ingreso-badge" style="margin-left:10px">INGRESO</span>
+        <div class="doctor-toggle">▾</div>
+      </div>
+      <div class="financiera-facturas-wrap">
+        <table class="fin-facturas-table">
+          <thead><tr><th>Fecha</th><th>Asunto</th><th>Importe ingresado</th><th>Drive</th></tr></thead>
+          <tbody>
+            ${facs.sort((a,b)=>(b['Fecha Correo']||'').localeCompare(a['Fecha Correo']||'')).map(f => {
+              const drive = f['Drive_Link'] ? `<a href="${f['Drive_Link']}" target="_blank" class="btn btn-ghost btn-sm" style="font-size:11px">↗ Ver</a>` : '—';
+              return `<tr>
+                <td>${f['Fecha Correo']||'—'}</td>
+                <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(f['Asunto']||'—').substring(0,50)}</td>
+                <td>${f['Importe'] ? `<span class="importe-badge" style="background:var(--green-bg);color:var(--green)">+${formatImporte(f['Importe'])}</span>` : '—'}</td>
+                <td>${drive}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleCard(id) {
+  document.getElementById(id)?.classList.toggle('open');
 }
 
 // ── ESTADÍSTICAS ──
