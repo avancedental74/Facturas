@@ -2,7 +2,7 @@
 <html lang="es" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="sync-fecha" content="2026-03-09T16:45:21.940826">
+<meta name="sync-fecha" content="2026-03-09T17:16:02.921163">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Avance Dental — Portal Gestoría</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -1431,17 +1431,27 @@ const TODAS_CATS = [
 ];
 
 // ── FINANCIERAS CONOCIDAS ──
-const FINANCIERAS_KEYWORDS = ['sofinco','soyou','bbva','cetelem','cofidis','santander consumer','sabadell consumer','caixabank payments','financ'];
+const FINANCIERAS_KEYWORDS = ['sofinco','soyou','sgef','bpce','cetelem','cofidis','santander consumer','sabadell consumer','caixabank payments','financ'];
 function esFinanciera(f) {
   const rem = limpiarRem(f['Remitente']).toLowerCase();
-  const cat = (f['Categoria']||'').toLowerCase();
+  const cat = (f['Categoria']||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  if (cat.includes('ingreso financiera') || cat.includes('comision financiera')) return true;
   if (cat.includes('ingreso') || cat.includes('financiera')) return true;
   return FINANCIERAS_KEYWORDS.some(k => rem.includes(k));
+}
+function esIngresoFinanciera(f) {
+  const cat = (f['Categoria']||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  return cat.includes('ingreso financiera') || cat === 'ingreso';
+}
+function esComisionFinanciera(f) {
+  const cat = (f['Categoria']||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  return cat.includes('comision financiera');
 }
 function nombreFinanciera(f) {
   const rem = limpiarRem(f['Remitente']).toLowerCase();
   if (rem.includes('sofinco')) return 'Sofinco';
-  if (rem.includes('soyou')) return 'SoYou';
+  if (rem.includes('soyou') || rem.includes('so you')) return 'SoYou';
+  if (rem.includes('sgef') || rem.includes('bpce')) return 'Sofinco (SGEF/BPCE)';
   if (rem.includes('bbva')) return 'BBVA';
   if (rem.includes('cetelem')) return 'Cetelem';
   if (rem.includes('cofidis')) return 'Cofidis';
@@ -1451,8 +1461,8 @@ function nombreFinanciera(f) {
   return limpiarRem(f['Remitente']).substring(0, 25);
 }
 function esDoctor(f) {
-  const cat = (f['Categoria']||'').toLowerCase();
-  return cat.includes('honorarios autonomo') || cat.includes('honorarios autónomo') || cat.includes('irpf');
+  const cat = (f['Categoria']||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+  return cat.includes('honorarios autonomo') || cat.includes('irpf');
 }
 
 // ── UTILS ──
@@ -1928,15 +1938,17 @@ function renderDoctores() {
 
   // Modelo 111 para el trimestre actual (siempre del año actual)
   const datosModelo = DATOS.filter(f => esDoctor(f) && f['Año']===anioActual && trimestre(f['Fecha Correo'])===trimActual);
-  const baseTotal = datosModelo.reduce((s,f) => s + (parseFloat(f['Importe'])||0), 0);
+  const baseTotal = datosModelo.reduce((s,f) => s + (parseFloat(f['Base Imponible']||f['Importe'])||0), 0);
   const irpfTotal = datosModelo.reduce((s,f) => {
-    const pct = parseFloat((f['IRPF_PCT']||f['IRPF']||'').toString().replace('%','').replace(',','.')) || 15;
-    return s + (parseFloat(f['Importe'])||0) * pct / 100;
+    const base = parseFloat(f['Base Imponible']||f['Importe'])||0;
+    const pct = parseFloat((f['Retencion IRPF %']||f['IRPF_PCT']||f['IRPF']||'').toString().replace('%','').replace(',','.')) || 15;
+    return s + base * pct / 100;
   }, 0);
   const anualIrpf = DATOS.filter(f => esDoctor(f) && f['Año']===anioActual)
     .reduce((s,f) => {
-      const pct = parseFloat((f['IRPF_PCT']||f['IRPF']||'').toString().replace('%','').replace(',','.')) || 15;
-      return s + (parseFloat(f['Importe'])||0) * pct / 100;
+      const base = parseFloat(f['Base Imponible']||f['Importe'])||0;
+      const pct = parseFloat((f['Retencion IRPF %']||f['IRPF_PCT']||f['IRPF']||'').toString().replace('%','').replace(',','.')) || 15;
+      return s + base * pct / 100;
     }, 0);
 
   document.getElementById('m111-trim').textContent = `${trimActual}T ${anioActual}`;
@@ -1953,10 +1965,11 @@ function renderDoctores() {
 
   lista.innerHTML = Object.entries(porDoctor).sort((a,b) => b[1].length - a[1].length).map(([nombre, facs]) => {
     const iniciales = nombre.split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
-    const bruto = facs.reduce((s,f) => s + (parseFloat(f['Importe'])||0), 0);
+    const bruto = facs.reduce((s,f) => s + (parseFloat(f['Base Imponible']||f['Importe'])||0), 0);
     const irpf = facs.reduce((s,f) => {
-      const pct = parseFloat((f['IRPF_PCT']||f['IRPF']||'15').toString().replace('%','').replace(',','.')) || 15;
-      return s + (parseFloat(f['Importe'])||0) * pct / 100;
+      const base = parseFloat(f['Base Imponible']||f['Importe'])||0;
+      const pct = parseFloat((f['Retencion IRPF %']||f['IRPF_PCT']||f['IRPF']||'15').toString().replace('%','').replace(',','.')) || 15;
+      return s + base * pct / 100;
     }, 0);
     const id = 'doc-' + nombre.replace(/\W/g,'_');
     return `
@@ -1965,7 +1978,7 @@ function renderDoctores() {
         <div class="doctor-avatar">${iniciales||'DR'}</div>
         <div class="doctor-meta">
           <div class="doctor-name">${nombre}</div>
-          <div class="doctor-stats">${facs.length} factura${facs.length!==1?'s':''} · IRPF ~15%</div>
+          <div class="doctor-stats">${facs.length} factura${facs.length!==1?'s':''} · IRPF ${facs[0]?.['Retencion IRPF %'] ? facs[0]['Retencion IRPF %']+'%' : '~15%'}</div>
         </div>
         <div class="doctor-totals">
           <div class="doctor-total-item">
@@ -2008,14 +2021,21 @@ function renderFinancieras() {
   let datos = DATOS.filter(esFinanciera);
   if (anioSel) datos = datos.filter(f => f['Año']===anioSel);
 
-  const totalIngresos = datos.reduce((s,f) => s + (parseFloat(f['Importe'])||0), 0);
-  document.getElementById('fin-kpi-total').textContent = formatImporte(totalIngresos) || '—';
-  document.getElementById('fin-kpi-count').textContent = datos.length;
-  document.getElementById('fin-kpi-sub').textContent = anioSel ? `en ${anioSel}` : 'todos los años';
+  const ingresos   = datos.filter(esIngresoFinanciera);
+  const comisiones = datos.filter(esComisionFinanciera);
+  const resto      = datos.filter(f => !esIngresoFinanciera(f) && !esComisionFinanciera(f));
 
-  // Agrupar por financiera
+  const totalIngresos   = ingresos.reduce((s,f) => s + (parseFloat(f['Importe'])||0), 0);
+  const totalComisiones = comisiones.reduce((s,f) => s + (parseFloat(f['Importe'])||0), 0);
+  const totalResto      = resto.reduce((s,f) => s + (parseFloat(f['Importe'])||0), 0);
+
+  document.getElementById('fin-kpi-total').textContent = formatImporte(totalIngresos) || '—';
+  document.getElementById('fin-kpi-count').textContent = ingresos.length;
+  document.getElementById('fin-kpi-sub').textContent   = anioSel ? `en ${anioSel}` : 'todos los años';
+
+  // Agrupar por financiera — solo ingresos
   const porFin = {};
-  datos.forEach(f => {
+  ingresos.forEach(f => {
     const nombre = nombreFinanciera(f);
     if (!porFin[nombre]) porFin[nombre] = [];
     porFin[nombre].push(f);
@@ -2023,7 +2043,31 @@ function renderFinancieras() {
   document.getElementById('fin-kpi-entidades').textContent = Object.keys(porFin).length || '—';
 
   const lista = document.getElementById('financieras-list');
-  if (!Object.keys(porFin).length) {
+
+  // ── Bloque de advertencia si hay comisiones/gastos mezclados
+  const avisoComisiones = comisiones.length > 0 ? `
+    <div style="background:var(--amber-bg);border-left:4px solid var(--amber);border-radius:8px;padding:14px 18px;margin-bottom:18px;font-size:13px;">
+      ⚠️ <strong>${comisiones.length} factura${comisiones.length!==1?'s':''} de comisión/cargo</strong> de financieras detectadas
+      (total: ${formatImporte(totalComisiones)}) — contabilizadas como <strong>gasto</strong>, no como ingreso.
+      <details style="margin-top:8px"><summary style="cursor:pointer;color:var(--amber)">Ver facturas de comisión</summary>
+        <table style="width:100%;margin-top:8px;font-size:12px;border-collapse:collapse">
+          <thead><tr><th style="text-align:left;padding:4px 8px">Fecha</th><th style="text-align:left;padding:4px 8px">Asunto</th><th style="text-align:right;padding:4px 8px">Importe</th></tr></thead>
+          <tbody>${comisiones.map(f=>`<tr>
+            <td style="padding:4px 8px">${f['Fecha Correo']||'—'}</td>
+            <td style="padding:4px 8px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(f['Asunto']||'—').substring(0,55)}</td>
+            <td style="padding:4px 8px;text-align:right;color:var(--red)">-${formatImporte(parseFloat(f['Importe'])||0)}</td>
+          </tr>`).join('')}</tbody>
+        </table>
+      </details>
+    </div>` : '';
+
+  // ── Bloque de no clasificados (resto)
+  const avisoResto = resto.length > 0 ? `
+    <div style="background:var(--surface2);border-left:4px solid var(--ink-30);border-radius:8px;padding:12px 18px;margin-bottom:18px;font-size:12px;color:var(--ink-60);">
+      ℹ️ ${resto.length} factura${resto.length!==1?'s':''} de financieras sin clasificar (${formatImporte(totalResto)}) — revisa manualmente.
+    </div>` : '';
+
+  if (!Object.keys(porFin).length && !comisiones.length) {
     lista.innerHTML = `<div class="doctores-empty">💳 No se encontraron facturas de financieras en el período seleccionado.<br><small>Financieras detectadas: Sofinco, SoYou, BBVA, Cetelem, Cofidis...</small></div>`;
     return;
   }
@@ -2033,45 +2077,49 @@ function renderFinancieras() {
     'Cofidis':'#ff6b00','Santander Consumer':'#ec0000','Sabadell Consumer':'#0053a0','CaixaBank Payments':'#007c89'
   };
 
-  lista.innerHTML = Object.entries(porFin).sort((a,b) => {
-    const ta = a[1].reduce((s,f)=>s+(parseFloat(f['Importe'])||0),0);
-    const tb = b[1].reduce((s,f)=>s+(parseFloat(f['Importe'])||0),0);
-    return tb - ta;
-  }).map(([nombre, facs]) => {
-    const total = facs.reduce((s,f) => s + (parseFloat(f['Importe'])||0), 0);
-    const iniciales = nombre.split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
-    const color = finColores[nombre] || '#059669';
-    const id = 'fin-' + nombre.replace(/\W/g,'_');
-    return `
-    <div class="financiera-card" id="${id}">
-      <div class="financiera-card-header" onclick="toggleCard('${id}')">
-        <div class="financiera-avatar" style="background:${color}15;color:${color}">${iniciales}</div>
-        <div class="financiera-meta">
-          <div class="financiera-name">${nombre}</div>
-          <div class="financiera-stats">${facs.length} factura${facs.length!==1?'s':''} de ingreso</div>
+  const cardsIngresos = Object.keys(porFin).length > 0 ? `
+    <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--green);margin-bottom:10px;">✅ Ingresos — Liquidaciones recibidas</div>
+    ${Object.entries(porFin).sort((a,b) => {
+      const ta = a[1].reduce((s,f)=>s+(parseFloat(f['Importe'])||0),0);
+      const tb = b[1].reduce((s,f)=>s+(parseFloat(f['Importe'])||0),0);
+      return tb - ta;
+    }).map(([nombre, facs]) => {
+      const total = facs.reduce((s,f) => s + (parseFloat(f['Importe'])||0), 0);
+      const iniciales = nombre.split(/\s+/).slice(0,2).map(w=>w[0]||'').join('').toUpperCase();
+      const color = finColores[nombre] || '#059669';
+      const id = 'fin-' + nombre.replace(/\W/g,'_');
+      return `
+      <div class="financiera-card" id="${id}">
+        <div class="financiera-card-header" onclick="toggleCard('${id}')">
+          <div class="financiera-avatar" style="background:${color}15;color:${color}">${iniciales}</div>
+          <div class="financiera-meta">
+            <div class="financiera-name">${nombre}</div>
+            <div class="financiera-stats">${facs.length} liquidación${facs.length!==1?'es':''} · ingreso</div>
+          </div>
+          <div class="financiera-total">+${formatImporte(total)||'—'}</div>
+          <span class="ingreso-badge" style="margin-left:10px">INGRESO</span>
+          <div class="doctor-toggle">▾</div>
         </div>
-        <div class="financiera-total">${formatImporte(total)||'—'}</div>
-        <span class="ingreso-badge" style="margin-left:10px">INGRESO</span>
-        <div class="doctor-toggle">▾</div>
-      </div>
-      <div class="financiera-facturas-wrap">
-        <table class="fin-facturas-table">
-          <thead><tr><th>Fecha</th><th>Asunto</th><th>Importe ingresado</th><th>Drive</th></tr></thead>
-          <tbody>
-            ${facs.sort((a,b)=>(b['Fecha Correo']||'').localeCompare(a['Fecha Correo']||'')).map(f => {
-              const drive = f['Drive_Link'] ? `<a href="${f['Drive_Link']}" target="_blank" class="btn btn-ghost btn-sm" style="font-size:11px">↗ Ver</a>` : '—';
-              return `<tr>
-                <td>${f['Fecha Correo']||'—'}</td>
-                <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(f['Asunto']||'—').substring(0,50)}</td>
-                <td>${f['Importe'] ? `<span class="importe-badge" style="background:var(--green-bg);color:var(--green)">+${formatImporte(f['Importe'])}</span>` : '—'}</td>
-                <td>${drive}</td>
-              </tr>`;
-            }).join('')}
-          </tbody>
-        </table>
-      </div>
-    </div>`;
-  }).join('');
+        <div class="financiera-facturas-wrap">
+          <table class="fin-facturas-table">
+            <thead><tr><th>Fecha</th><th>Asunto</th><th>Importe ingresado</th><th>Drive</th></tr></thead>
+            <tbody>
+              ${facs.sort((a,b)=>(b['Fecha Correo']||'').localeCompare(a['Fecha Correo']||'')).map(f => {
+                const drive = f['Drive_Link'] ? `<a href="${f['Drive_Link']}" target="_blank" class="btn btn-ghost btn-sm" style="font-size:11px">↗ Ver</a>` : '—';
+                return `<tr>
+                  <td>${f['Fecha Correo']||'—'}</td>
+                  <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${(f['Asunto']||'—').substring(0,50)}</td>
+                  <td>${f['Importe'] ? `<span class="importe-badge" style="background:var(--green-bg);color:var(--green)">+${formatImporte(f['Importe'])}</span>` : '—'}</td>
+                  <td>${drive}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+    }).join('')}` : '';
+
+  lista.innerHTML = avisoComisiones + avisoResto + cardsIngresos;
 }
 
 function toggleCard(id) {
