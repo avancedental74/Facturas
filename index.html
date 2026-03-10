@@ -2,7 +2,7 @@
 <html lang="es" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="sync-fecha" content="2026-03-10T13:03:07.687171">
+<meta name="sync-fecha" content="2026-03-10T13:13:55.589050">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Avance Dental — Portal Gestoría</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -2015,8 +2015,8 @@ function renderKPIs() {
   // KPI importes — separar gastos e ingresos
   const gastos   = DATOS.filter(f => !esIngresoFinanciera(f));
   const ingresos = DATOS.filter(f => esIngresoFinanciera(f));
-  const totalGastoAnio   = gastos.filter(f=>f['Año']===anioActual).reduce((s,f)=>s+(parseFloat(f['Importe'])||0),0);
-  const totalIngresoAnio = ingresos.filter(f=>f['Año']===anioActual).reduce((s,f)=>s+(parseFloat(f['Importe'])||0),0);
+  const totalGastoAnio   = gastos.filter(f=>f['Año']===anioActual).reduce((s,f)=>s+(parseNumero(f['Importe'])||0),0);
+  const totalIngresoAnio = ingresos.filter(f=>f['Año']===anioActual).reduce((s,f)=>s+(parseNumero(f['Importe'])||0),0);
   document.getElementById('k-importe').textContent    = totalGastoAnio   > 0 ? formatImporte(totalGastoAnio)   : '—';
   document.getElementById('k-importe-sub').textContent = `gastos en ${anioActual}`;
   document.getElementById('k-ingresos').textContent   = totalIngresoAnio > 0 ? formatImporte(totalIngresoAnio) : '—';
@@ -2057,7 +2057,7 @@ function renderCatSummary() {
     const c = f['Categoria']||'General';
     if (!porCat[c]) porCat[c] = {count:0, importe:0};
     porCat[c].count++;
-    porCat[c].importe += parseFloat(f['Importe'])||0;
+    porCat[c].importe += parseNumero(f['Importe'])||0;
   });
 
   const sorted = Object.entries(porCat).sort((a,b) => b[1].count - a[1].count).slice(0,6);
