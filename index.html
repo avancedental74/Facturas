@@ -2,7 +2,7 @@
 <html lang="es" data-theme="light">
 <head>
 <meta charset="UTF-8">
-<meta name="sync-fecha" content="2026-03-10T12:26:31.002847">
+<meta name="sync-fecha" content="2026-03-10T12:37:02.637837">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Avance Dental — Portal Gestoría</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
@@ -1123,6 +1123,9 @@ td { padding: 10px 14px; vertical-align: middle; }
     <button class="nav-item" onclick="showPage('exportar', this)">
       <span class="n-icon">↓</span><span>Exportar</span>
     </button>
+    <button class="nav-item" onclick="showPage('config', this)">
+      <span class="n-icon">⚙️</span><span>Configuración</span>
+    </button>
   </nav>
 
   <div class="sidebar-footer">
@@ -1401,6 +1404,36 @@ td { padding: 10px 14px; vertical-align: middle; }
       </div>
     </div>
 
+    <!-- ── CONFIGURACIÓN ── -->
+    <div class="page" id="page-config">
+      <div class="panel" style="max-width: 600px; margin: 0 auto;">
+        <div class="panel-header">
+          <span class="panel-title">🔧 Ajustes de Sincronización</span>
+        </div>
+        <div style="padding:24px">
+          <p style="margin-bottom:20px; color:var(--ink-60);">
+            Para que el dashboard pueda guardar tus correcciones directamente en GitHub, necesitas configurar tu Token de acceso personal.
+            Este token se guardará <strong>solo en este navegador</strong> y nunca se enviará al servidor.
+          </p>
+          
+          <div class="modal-edit-field" style="margin-bottom:20px">
+            <label>Token de GitHub (ghp_...)</label>
+            <input type="password" id="cfg-token" placeholder="Pega tu token aquí" style="width:100%; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border); background:var(--bg); color:var(--ink);">
+            <p style="font-size:11px; margin-top:6px; color:var(--ink-30);">
+              Genera uno en <a href="https://github.com/settings/tokens/new" target="_blank" style="color:var(--accent)">GitHub Settings</a> con permiso <code>repo</code>.
+            </p>
+          </div>
+
+          <div style="display:flex; gap:10px">
+            <button class="btn btn-primary" onclick="guardarConfigSeguridad()">Guardar Configuración</button>
+            <button class="btn btn-ghost" onclick="borrarConfigSeguridad()">Borrar Token</button>
+          </div>
+
+          <div id="cfg-status" style="margin-top:15px; font-size:12px; display:none"></div>
+        </div>
+      </div>
+    </div>
+
   </div><!-- /content -->
 
     <!-- ── DOCTORES ── -->
@@ -1646,7 +1679,7 @@ const DATOS_RAW    = [{"Fecha Correo": "2026-03-05", "Asunto": "FACTURA DE MARZO
 const SHEET_URL    = "https://docs.google.com/spreadsheets/d/1ZO99leGrBa8mPDV-sgJD16QpJ29qhJu59XLcf5oRUu8/edit";
 const GITHUB_USER = "avancedental74";
 const GITHUB_REPO = "Facturas";
-const GITHUB_TOKEN_PUB = "ghp_ESTO_ES_UN_PLACEHOLDER_SOLO_PARA_EVITAR_ERRORES"; // token de GitHub (solo permiso contents:write)
+const GITHUB_TOKEN_PUB = ""; // token de GitHub (solo permiso contents:write)
 
 // ── ESTADO LOCAL (persistido en localStorage) ──
 function cargarEstadoLocal() {
@@ -1660,6 +1693,37 @@ let estadoLocal = cargarEstadoLocal();
 // Importes y categorías editadas: { [archivo]: { importe, categoria, duplicado } }
 if (!estadoLocal.ediciones) estadoLocal.ediciones = {};
 if (!estadoLocal.syncInfo)  estadoLocal.syncInfo  = { fecha: null, error: false };
+if (!estadoLocal.seguridad) estadoLocal.seguridad = { github_token: '' };
+
+function guardarConfigSeguridad() {
+  const token = document.getElementById('cfg-token').value.trim();
+  if (token === '**************************') {
+     alert('No se ha detectado ningún cambio en el token.');
+     return;
+  }
+  if (!token.startsWith('ghp_') && token !== '') {
+    alert('El token debe empezar por ghp_');
+    return;
+  }
+  estadoLocal.seguridad.github_token = token;
+  guardarEstadoLocal(estadoLocal);
+  
+  const st = document.getElementById('cfg-status');
+  st.textContent = '✅ Configuración guardada correctamente.';
+  st.style.display = 'block';
+  st.style.color = 'var(--green)';
+}
+
+function borrarConfigSeguridad() {
+  document.getElementById('cfg-token').value = '';
+  estadoLocal.seguridad.github_token = '';
+  guardarEstadoLocal(estadoLocal);
+  
+  const st = document.getElementById('cfg-status');
+  st.textContent = '🗑️ Token borrado del navegador.';
+  st.style.display = 'block';
+  st.style.color = 'var(--ink-60)';
+}
 
 // Enriquecer DATOS con estado local
 const DATOS = DATOS_RAW.map(f => {
@@ -1899,7 +1963,19 @@ function showPage(id, btn) {
     document.querySelectorAll('.nav-item')[idx]?.classList.add('active');
   }
   const titles = {resumen:'Resumen',facturas:'Facturas',estadisticas:'Estadísticas',doctores:'Doctores (IRPF)',financieras:'Ingresos — Financieras',informe:'Informe PDF',exportar:'Exportar'};
-  document.getElementById('page-title').textContent = titles[id]||id;
+  document.getElementById('page-title').textContent = titles[id]||(id==='config'?'Configuración':id);
+  if (id==='config') {
+    const tokenInput = document.getElementById('cfg-token');
+    if (estadoLocal.seguridad?.github_token) {
+      tokenInput.value = '**************************';
+      document.getElementById('cfg-status').textContent = '✅ Token configurado y guardado en este navegador.';
+      document.getElementById('cfg-status').style.display = 'block';
+      document.getElementById('cfg-status').style.color = 'var(--green)';
+    } else {
+      tokenInput.value = '';
+      document.getElementById('cfg-status').style.display = 'none';
+    }
+  }
   if (id==='estadisticas' && !statsInit) { renderStats(); statsInit=true; }
   if (id==='facturas') detectarDuplicados();
   if (id==='doctores') { renderKPIs(); renderDoctores(); }
@@ -2276,8 +2352,16 @@ function onCatChange(sel) {
 // Las correcciones se suben a GitHub Pages como correcciones.json
 // El bat las leerá en la próxima ejecución y actualizará el Sheet y proveedores.json
 async function publicarCorreccionesEnGitHub(correcciones) {
-  if (!GITHUB_USER || GITHUB_USER === 'avancedental74') return false;
-  if (!GITHUB_TOKEN_PUB || GITHUB_TOKEN_PUB === 'ghp_ESTO_ES_UN_PLACEHOLDER_SOLO_PARA_EVITAR_ERRORES') return false;
+  if (!GITHUB_USER || GITHUB_USER.includes('PLACEHOLDER')) return false;
+  
+  // Obtener el token desde localStorage por seguridad
+  const tokenPrivado = estadoLocal.seguridad ? estadoLocal.seguridad.github_token : null;
+
+  if (!tokenPrivado) {
+    alert('⚠️ Error de sincronización: No has configurado tu Token de GitHub.\n\nVe al menú "Configuración" en la barra lateral e introduce tu token para poder guardar los cambios.');
+    showPage('config', document.querySelector('button[onclick*="config"]'));
+    return false;
+  }
 
   try {
     const contenido = JSON.stringify(Object.values(correcciones), null, 2);
@@ -2286,7 +2370,7 @@ async function publicarCorreccionesEnGitHub(correcciones) {
     // Obtener SHA actual del archivo (necesario para actualizarlo)
     const getUrl = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/correcciones.json`;
     const headers = {
-      'Authorization': `token ${GITHUB_TOKEN_PUB}`,
+      'Authorization': `token ${tokenPrivado}`,
       'Accept': 'application/vnd.github.v3+json',
       'Content-Type': 'application/json',
     };
